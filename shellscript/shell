@@ -1,0 +1,97 @@
+Automated Web Hosting Using Shell Scripting
+Project Overview
+This project automates the deployment of a static website on an Ubuntu Linux server using a Bash shell script. The script installs and configures the Apache web server, downloads a website template, extracts the files, places them in Apache's web root, and restarts the service.
+
+The goal is to reduce manual setup steps and make website deployment faster and repeatable.
+Technologies Used
+- Bash / Shell Scripting — automate deployment tasks
+- Ubuntu Linux — server operating system
+- Apache2 — web server
+- curl — download the website template
+- unzip — extract the downloaded ZIP archive
+- APT — install required packages
+- systemd — manage the Apache service
+What the Script Does
+1. Updates the APT package index.
+2. Installs Apache2, unzip, and curl.
+3. Starts Apache2 and enables it to start on boot.
+4. Removes the existing /var/www/html directory.
+5. Downloads the website template ZIP file.
+6. Extracts the template into /var/www/.
+7. Moves the extracted website directory to /var/www/html.
+8. Restarts Apache2 to serve the deployed website.
+Prerequisites
+- An Ubuntu server or virtual machine
+- A user account with sudo privileges
+- An internet connection
+- Inbound HTTP access on port 80 in the server firewall or cloud security group
+Shell Script
+Save the following script as deploy.sh:
+#!/bin/bash
+set -e
+
+ZIP_URL="https://www.tooplate.com/zip-templates/2167_orbital.zip"
+
+sudo apt update
+sudo apt install -y apache2 unzip curl
+
+sudo systemctl enable --now apache2
+
+# Replace the current website in Apache's document root.
+sudo rm -rf /var/www/html
+
+sudo curl -fL "$ZIP_URL" -o /tmp/website.zip
+sudo unzip -o /tmp/website.zip -d /var/www/
+
+sudo mv /var/www/2167_orbital /var/www/html
+
+sudo systemctl restart apache2
+
+echo "Website deployment completed."
+Important: The script removes /var/www/html before deploying the new site. Back up any existing website files before running it. The extracted ZIP folder is expected to be named 2167_orbital; verify the archive contents if the template changes.
+
+How to Run
+Clone or upload this project to your Ubuntu server, then run:
+chmod +x deploy.sh
+./deploy.sh
+The script uses sudo for administrative operations, so enter your password if prompted.
+Verify the Deployment
+Check that Apache is running:
+sudo systemctl status apache2
+Check the HTTP response locally on the server:
+curl -I http://localhost
+Then open the server's public IP address in a browser:
+http://YOUR_SERVER_PUBLIC_IP
+Make sure port 80 is allowed by your firewall or cloud security group. Do not use HTTPS unless you have also configured TLS.
+Example Architecture
+User / Browser
+      |
+      | HTTP (Port 80)
+      v
+Ubuntu Linux Server
+      |
+      v
+Apache2 Web Server
+      |
+      v
+/var/www/html
+      |
+      v
+Deployed Static Website
+Skills Demonstrated
+- Bash scripting and command-line automation
+- Linux package management
+- Apache installation and service management
+- Website file deployment
+- Downloading and extracting application assets
+- Basic web server troubleshooting
+Future Improvements
+- Add error handling and deployment logs
+- Validate the ZIP archive and extracted directory before replacing the live website
+- Keep backups and support rollback
+- Configure a domain name and HTTPS with a TLS certificate
+- Automate deployment through an AWS EC2 user-data script or CI/CD pipeline
+Disclaimer
+The website template is downloaded from Tooplate. Make sure you comply with the template's license and usage terms before publishing it.
+Project: Automated Web Hosting Using Shell Scripting
+Purpose: Practice Linux administration and automate static website deployment.
